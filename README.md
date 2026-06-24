@@ -1,45 +1,91 @@
-# Fable 5 Playbook
+# Claude Code Fable Playbook
 
-An operating playbook for `claude-opus-4-8`. It encodes the decision-making
-patterns that made Fable 5 feel good to work with, distilled from a side-by-side
-behavioral read of real session logs.
+Make Opus behave more like the best parts of Fable 5: fewer round trips, clearer
+plans, safer edits, and verified fixes.
 
-> In my own testing, pointing Opus 4.8 at this playbook gets the closest to a
-> Fable 5 like experience I have found so far.
+A drop-in `CLAUDE.md` that gets your coding agent to plan, batch tools, read
+before editing, and verify changes. Built from an aggregate comparison of
+**2,124 Opus 4.8 turns vs 220 Fable 5 turns** of real coding-agent logs.
 
-## What it's for
+## Try it in 30 seconds
 
-Large models can do the same work in very different ways. This playbook captures
-the specific working habits that made Fable 5 pleasant in practice and turns them
-into standing instructions for Opus 4.8:
+For Claude Code, save the playbook as `CLAUDE.md` in your project:
 
-- Batch independent tool calls instead of going one at a time
-- Write the plan out loud on anything past a few steps
-- Read a file before editing it
-- Run a real check after an edit and report the output, never claim "done" on an
-  unverified change
-- Finish the task in one turn instead of stopping to ask after every step
+```bash
+curl -L https://raw.githubusercontent.com/New1Direction/fable-5-playbook/main/OPUS_FABLE_PLAYBOOK.md -o CLAUDE.md
+```
 
-It also rejects the one thing Fable did worse, shipping edits without verifying
-them, so Opus builds on Fable rather than copying it wholesale.
+Then work normally. The playbook pushes the model to:
 
-## How to use it
+- batch independent tool calls
+- write a plan for multi-step work
+- read files before editing
+- verify changes before claiming completion
 
-Put the playbook somewhere the model reads as standing guidance, then work
-normally:
+You can also drop it at the user level, in a project rule file, or in the system
+prompt of your own Opus integration. No tooling or setup; the rules are written
+to be followed directly.
 
-- `CLAUDE.md` at the project or user level (Claude Code)
-- a project rule file
-- the system prompt of your own Opus 4.8 integration
+## Why this exists
 
-No tooling or setup. The rules are written to be followed directly.
+The biggest difference between the two models was not "intelligence." It was
+operating style.
+
+| Behavior | Fable 5 | Opus 4.8 | Playbook action |
+|---|---:|---:|---|
+| Parallel tool calls | 28.5% | 14.3% | Batch harder |
+| Externalized task list | 5.5% | 2.2% | Plan out loud |
+| Read before edit | 98.4% | 98.3% | Keep it |
+| Test after edit | 13.8% | 21.7% | Do not copy Fable; verify more |
+
+Fable got to the same amount of work in fewer round trips and planned out loud
+more often. But it also shipped edits without checking them, and Opus already
+verifies more than Fable did. So the playbook adopts Fable's batching and
+planning habits while pushing verification further than either model actually
+managed.
 
 Full text: [OPUS_FABLE_PLAYBOOK.md](OPUS_FABLE_PLAYBOOK.md)
 
-## Where it comes from
+## Examples
 
-Every claim in the playbook is measured, not assumed. It is based on an aggregate
-behavioral comparison of real Opus 4.8 and Fable 5 session logs: turn counts, tool
-sequencing, parallel call rates, and read-before-edit and test-after-edit ratios.
-The comparison reports only aggregate statistics. No project names, code, or
-session content are included.
+- [`examples/CLAUDE.md`](examples/CLAUDE.md): a realistic project `CLAUDE.md`
+  that pairs a short project brief with the playbook rules.
+- [`examples/before-after.md`](examples/before-after.md): the same small task
+  handled with and without the playbook.
+
+## Reproduce the numbers
+
+Every claim is measured, not assumed. The comparison reports aggregate
+statistics only: no project names, code, or session content.
+
+- Aggregate metrics: [`data/model_compare.json`](data/model_compare.json)
+- The script that produced them: [`scripts/compare_models.py`](scripts/compare_models.py)
+
+The script segments real Claude Code session logs into turns and measures turn
+cadence, parallel tool-call rate, read-before-edit and test-after-edit ratios,
+and tool transitions for each model.
+
+```bash
+python3 scripts/compare_models.py
+```
+
+It reads your local `~/.claude/projects` logs and is hardcoded to compare
+`claude-fable-5` and `claude-opus-4-8`. Edit the `models` list near the bottom
+to compare whatever models you have logs for.
+
+## Help validate it
+
+This is one person's measurement across their own logs. The most useful thing
+you can contribute is a second data point, not a star:
+
+- Run `scripts/compare_models.py` against your own logs and share the aggregate
+  numbers.
+- Or post a plain before/after from your own Claude Code runs.
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Issues labeled `validation wanted` and
+`adapter wanted` are good places to start. Please do not star-trade or spam;
+real results are worth more.
+
+## License
+
+[MIT](LICENSE)
